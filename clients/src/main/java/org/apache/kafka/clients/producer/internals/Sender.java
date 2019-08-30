@@ -138,7 +138,9 @@ public class Sender implements Runnable {
         this.client = client;
         this.accumulator = accumulator;
         this.metadata = metadata;
+        //是否保存消息顺序
         this.guaranteeMessageOrder = guaranteeMessageOrder;
+        //请求大小的上限
         this.maxRequestSize = maxRequestSize;
         this.running = true;
         this.acks = acks;
@@ -146,6 +148,7 @@ public class Sender implements Runnable {
         this.time = time;
         this.sensors = new SenderMetrics(metricsRegistry);
         this.requestTimeoutMs = requestTimeoutMs;
+        //重试间隔时间
         this.retryBackoffMs = retryBackoffMs;
         this.apiVersions = apiVersions;
         this.transactionManager = transactionManager;
@@ -155,6 +158,7 @@ public class Sender implements Runnable {
      * The main run loop for the sender thread
      */
     public void run() {
+        //启动生产者端的发送者线程
         log.debug("Starting Kafka producer I/O thread.");
 
         // main loop, runs until close is called
@@ -165,7 +169,8 @@ public class Sender implements Runnable {
                 log.error("Uncaught error in kafka producer I/O thread: ", e);
             }
         }
-
+        //开始关闭发送者线程
+        //发送剩下的记录
         log.debug("Beginning shutdown of Kafka producer I/O thread, sending remaining records.");
 
         // okay we stopped accepting requests but there may still be
@@ -234,7 +239,7 @@ public class Sender implements Runnable {
                 transactionManager.authenticationFailed(e);
             }
         }
-
+        //发送生产者数据
         long pollTimeout = sendProducerData(now);
         client.poll(pollTimeout, now);
     }

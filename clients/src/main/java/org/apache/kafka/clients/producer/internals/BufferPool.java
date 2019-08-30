@@ -44,13 +44,17 @@ import org.apache.kafka.common.utils.Time;
 public class BufferPool {
 
     static final String WAIT_TIME_SENSOR_NAME = "bufferpool-wait-time";
-
+//  总大小 buffer.memory
     private final long totalMemory;
+//    batch.size
     private final int poolableSize;
     private final ReentrantLock lock;
+//    池中队列
     private final Deque<ByteBuffer> free;
+//    等待队列
     private final Deque<Condition> waiters;
     /** Total available memory is the sum of nonPooledAvailableMemory and the number of byte buffers in free * poolableSize.  */
+//    剩余内存空间
     private long nonPooledAvailableMemory;
     private final Metrics metrics;
     private final Time time;
@@ -106,6 +110,7 @@ public class BufferPool {
         this.lock.lock();
         try {
             // check if we have a free buffer of the right size pooled
+//            刚好有闲置的buffer
             if (size == poolableSize && !this.free.isEmpty())
                 return this.free.pollFirst();
 
@@ -115,10 +120,12 @@ public class BufferPool {
             if (this.nonPooledAvailableMemory + freeListSize >= size) {
                 // we have enough unallocated or pooled memory to immediately
                 // satisfy the request, but need to allocate the buffer
+//                有足够的空间满足需求，但是需要分配缓冲区
                 freeUp(size);
                 this.nonPooledAvailableMemory -= size;
             } else {
                 // we are out of memory and will have to block
+//                阻塞
                 int accumulated = 0;
                 Condition moreMemory = this.lock.newCondition();
                 try {
@@ -148,6 +155,7 @@ public class BufferPool {
                         // otherwise allocate memory
                         if (accumulated == 0 && size == this.poolableSize && !this.free.isEmpty()) {
                             // just grab a buffer from the free list
+//                            只需从空闲列表中获取一个缓冲区
                             buffer = this.free.pollFirst();
                             accumulated = size;
                         } else {
@@ -189,6 +197,7 @@ public class BufferPool {
      * Allocate a buffer.  If buffer allocation fails (e.g. because of OOM) then return the size count back to
      * available memory and signal the next waiter if it exists.
      */
+//    如果分配失败，把nonPooledAvailableMemory调回去， 通知下一个等待者
     private ByteBuffer safeAllocateByteBuffer(int size) {
         boolean error = true;
         try {
@@ -218,6 +227,7 @@ public class BufferPool {
      * Attempt to ensure we have at least the requested number of bytes of memory for allocation by deallocating pooled
      * buffers (if needed)
      */
+//    释放已经池化的缓存区
     private void freeUp(int size) {
         while (!this.free.isEmpty() && this.nonPooledAvailableMemory < size)
             this.nonPooledAvailableMemory += this.free.pollLast().capacity();

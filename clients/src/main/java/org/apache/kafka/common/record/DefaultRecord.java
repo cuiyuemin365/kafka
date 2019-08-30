@@ -178,15 +178,21 @@ public class DefaultRecord implements Record {
                               ByteBuffer key,
                               ByteBuffer value,
                               Header[] headers) throws IOException {
+        //计算数据的大小
+        //底层使用 zigzag 算法对整数进行编码
         int sizeInBytes = sizeOfBodyInBytes(offsetDelta, timestampDelta, key, value, headers);
+        //写入大小
         ByteUtils.writeVarint(sizeInBytes, out);
 
+        //写入属性个数
         byte attributes = 0; // there are no used record attributes at the moment
         out.write(attributes);
-
+        //时间戳偏移量
         ByteUtils.writeVarlong(timestampDelta, out);
+        //写入位移偏移量
         ByteUtils.writeVarint(offsetDelta, out);
 
+        //写入 key 的大小和 key 的数据流
         if (key == null) {
             ByteUtils.writeVarint(-1, out);
         } else {
@@ -194,7 +200,7 @@ public class DefaultRecord implements Record {
             ByteUtils.writeVarint(keySize, out);
             Utils.writeTo(out, key, keySize);
         }
-
+        //写入 value 的大小和 value 的数据流
         if (value == null) {
             ByteUtils.writeVarint(-1, out);
         } else {
@@ -205,18 +211,21 @@ public class DefaultRecord implements Record {
 
         if (headers == null)
             throw new IllegalArgumentException("Headers cannot be null");
-
+        //写入头的大小
         ByteUtils.writeVarint(headers.length, out);
-
+        //依次写入头
         for (Header header : headers) {
             String headerKey = header.key();
             if (headerKey == null)
                 throw new IllegalArgumentException("Invalid null header key found in headers");
-
+            //写入 key 的长度
             byte[] utf8Bytes = Utils.utf8(headerKey);
             ByteUtils.writeVarint(utf8Bytes.length, out);
+            //写入 key 的值
             out.write(utf8Bytes);
 
+            //写入 value 的长度
+            //写入 value 的值
             byte[] headerValue = header.value();
             if (headerValue == null) {
                 ByteUtils.writeVarint(-1, out);

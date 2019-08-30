@@ -242,6 +242,7 @@ public final class Utils {
     }
 
     /**
+     * 用 ByteBuffer 包装 byte 数组
      * Wrap an array as a nullable ByteBuffer.
      * @param array The nullable array to wrap
      * @return The wrapping ByteBuffer or null if array is null

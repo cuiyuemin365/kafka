@@ -54,6 +54,9 @@ public class ProducerInterceptors<K, V> implements Closeable {
      * @param record the record from client
      * @return producer record to send to topic/partition
      */
+//    1.在key value 序列化之前调用
+//    2.进行链式调用
+//    3.各个拦截器抛出的异常会被忽略掉
     public ProducerRecord<K, V> onSend(ProducerRecord<K, V> record) {
         ProducerRecord<K, V> interceptRecord = record;
         for (ProducerInterceptor<K, V> interceptor : this.interceptors) {

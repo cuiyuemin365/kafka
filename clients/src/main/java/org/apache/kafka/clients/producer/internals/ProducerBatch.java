@@ -59,6 +59,7 @@ public final class ProducerBatch {
     private enum FinalState { ABORTED, FAILED, SUCCEEDED }
 
     final long createdMs;
+//    主题分区
     final TopicPartition topicPartition;
     final ProduceRequestResult produceFuture;
 
