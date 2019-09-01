@@ -35,6 +35,7 @@ public interface KafkaClient extends Closeable {
      * @param node The node to check
      * @param now The current timestamp
      */
+    //检查当前是否准备好发送另一个请求给指定的 node
     boolean isReady(Node node, long now);
 
     /**
