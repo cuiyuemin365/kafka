@@ -50,6 +50,9 @@ import java.util.regex.Pattern;
  * Note that pause state as well as fetch/consumed positions are not preserved when partition
  * assignment is changed whether directly by the user or through a group rebalance.
  */
+//维护订阅状态:
+    //手动分配
+    //自动分配
 public class SubscriptionState {
     private static final String SUBSCRIPTION_EXCEPTION_MESSAGE =
             "Subscription to topics, partitions and pattern are mutually exclusive";
@@ -71,6 +74,7 @@ public class SubscriptionState {
     private final Set<String> groupSubscription;
 
     /* the partitions that are currently assigned, note that the order of partition matters (see FetchBuilder for more details) */
+    // 当前的分区分配状态
     private final PartitionStates<TopicPartitionState> assignment;
 
     /* Default offset reset strategy */
@@ -104,6 +108,11 @@ public class SubscriptionState {
             throw new IllegalStateException(SUBSCRIPTION_EXCEPTION_MESSAGE);
     }
 
+    /**
+     * 订阅指定topic
+     * @param topics
+     * @param listener
+     */
     public void subscribe(Set<String> topics, ConsumerRebalanceListener listener) {
         if (listener == null)
             throw new IllegalArgumentException("RebalanceListener cannot be null");
@@ -171,6 +180,7 @@ public class SubscriptionState {
     }
 
     /**
+     * 修改当前消费者分配的分区
      * Change the assignment to the specified partitions returned from the coordinator,
      * note this is different from {@link #assignFromUser(Set)} which directly set the assignment from user inputs
      */
@@ -437,10 +447,16 @@ public class SubscriptionState {
         return map;
     }
 
+    /**
+     * 分区状态:
+     * 拉取偏移量信息
+     * 消费偏移量信息
+     */
     private static class TopicPartitionState {
         private Long position; // last consumed position
         private Long highWatermark; // the high watermark from last fetch
         private Long lastStableOffset;
+        //分区是否被暂停拉取
         private boolean paused;  // whether this partition has been paused by the user
         private OffsetResetStrategy resetStrategy;  // the strategy to use if the offset needs resetting
         private Long nextAllowedRetryTimeMs;
